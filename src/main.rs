@@ -26,11 +26,12 @@ impl Base58 {
         let mut carry = 0u16;
         while let Some(u) = bin.pop() {
             carry = carry * 256 + (u as u16);
-            while carry != 0 {
+            while carry >= 58 {
                 s.push(self.table[(carry%58) as usize]);
                 carry /= 58;
             }
         }
+        if carry > 0 { s.push(self.table[(carry%58) as usize]); }
         s.reverse();
         String::from_utf8(s).unwrap()
     }
@@ -48,6 +49,7 @@ impl Base58 {
         }
         if carry > 0 { bin.push((carry%256) as u8); }
         bin.reverse();
+        println!("{}", bin.iter().map(|x| format!("{:02X}", x)).collect::<String>().to_lowercase());
         bin
     }
 }
@@ -86,6 +88,7 @@ impl Base58check {
 fn main() {
     let str = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
     let base58check = Base58check::new();
+    let base58 = Base58::new();
     let mut version = vec![0x04, 0x88, 0xb2, 0x1e];
-    println!("{:?}", base58check.encode(version, base58check.decode(str)));
+    println!("{:?}", base58.encode(base58.decode(str)));
 }
