@@ -55,6 +55,7 @@ struct Base58check {
     base58: Base58
 }
 
+// https://github.com/satoshilabs/slips/blob/master/slip-0132.md
 impl Base58check {
     fn new() -> Self {
         Base58check {
