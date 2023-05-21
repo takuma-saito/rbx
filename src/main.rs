@@ -41,11 +41,12 @@ impl Base58 {
         let mut carry = 0u16;
         while let Some(c) = s.pop() {
             carry = carry * 58 + (self.rev_table[&c] as u16);
-            while carry != 0 {
-                bin.push((carry%58) as u8);
-                carry /= 58;
+            while carry >= 256 {
+                bin.push((carry%256) as u8);
+                carry /= 256;
             }
         }
+        if carry > 0 { bin.push((carry%256) as u8); }
         bin.reverse();
         bin
     }
@@ -68,15 +69,17 @@ impl Base58check {
     }
 
     fn encode(&self, mut version: Vec<u8>, mut bin: Vec<u8>) -> String {
-        version.append(&mut bin);
+        version.append(&mut bin); // TODO: もう少しいいやり方を考える
         let mut checksum = self.double_hash(&version)[0..4].to_vec();
-        version.append(&mut checksum[0..4].to_vec()); // TODO: Vec に変更せず slice で実装する
+        version.append(&mut checksum); // TODO: Vec に変更せず slice で実装する
         self.base58.encode(version)
     }
 
     fn decode(&self, text: &str) -> Vec<u8> {
         let data = self.base58.decode(text);
-        data[4 .. (data.len()-4)].to_vec() // TODO: checksum のコードを入れる, version drop 対応
+        let res = data[4 .. (data.len()-4)].to_vec(); // TODO: checksum のコードを入れる, version drop 対応
+        println!("{:?}", data.iter().map(|x| format!("{:02X}", x)).collect::<String>());
+        res
     }
 }
 
