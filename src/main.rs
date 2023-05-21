@@ -30,6 +30,7 @@ impl Base58 {
                 carry /= 58;
             }
         }
+        s.reverse();
         String::from_utf8(s).unwrap()
     }
     
@@ -38,14 +39,13 @@ impl Base58 {
         let mut bin = Vec::new();
         let mut carry = 0u16;
         while let Some(c) = s.pop() {
-            carry = carry*58 + (self.rev_table[&c] as u16);
+            carry = carry * 58 + (self.rev_table[&c] as u16);
             while carry != 0 {
-                println!("{:?}", carry%58);
                 bin.push((carry%58) as u8);
                 carry /= 58;
             }
         }
-        println!("{:?}", bin);
+        bin.reverse();
         bin
     }
 }
