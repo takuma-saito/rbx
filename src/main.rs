@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::collections::HashMap;
+use sha2::{Sha256, Digest};
 
 struct Base58 {
     table: Vec<u8>,
@@ -50,8 +51,37 @@ impl Base58 {
     }
 }
 
+struct Base58check {
+    base58: Base58
+}
+
+impl Base58check {
+    fn new() -> Self {
+        Base58check {
+            base58: Base58::new()
+        }
+    }
+
+    fn double_hash(&self, bin: &[u8]) -> Vec<u8> {
+        Sha256::digest(Sha256::digest(bin)).to_vec()
+    }
+
+    fn encode(&self, mut version: Vec<u8>, mut bin: Vec<u8>) -> String {
+        version.append(&mut bin);
+        let mut checksum = self.double_hash(&version)[0..4].to_vec();
+        version.append(&mut checksum[0..4].to_vec()); // TODO: Vec に変更せず slice で実装する
+        self.base58.encode(version)
+    }
+
+    fn decode(&self, text: &str) -> Vec<u8> {
+        let data = self.base58.decode(text);
+        data[4 .. (data.len()-4)].to_vec() // TODO: checksum のコードを入れる, version drop 対応
+    }
+}
+
 fn main() {
-    let str = "9xpXFhFpqdQK3TmytPBqXtGSwS3DLjojFhTGht8gwAAii8py5X6pxeBnQ6ehJiyJ6nDjWGJfZ95WxByFXVkDxHXrqu53WCRGypk2ttuqncb";
-    let base58 = Base58::new();
-    println!("{:?}", base58.encode(base58.decode(str)));
+    let str = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
+    let base58check = Base58check::new();
+    let mut version = vec![0x04, 0x88, 0xb2, 0x1e];
+    println!("{:?}", base58check.encode(version, base58check.decode(str)));
 }
