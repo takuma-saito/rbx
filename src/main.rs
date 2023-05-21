@@ -1,24 +1,26 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 struct Base58 {
     table: Vec<u8>,
-    revTable: HashMap<u8, u8>
+    rev_table: HashMap<u8, u8>
 }
 
 impl Base58 {
     fn new() -> Self {
         let table = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".as_bytes().to_vec();
-        let mut revTable = HashMap::new();
+        let mut rev_table = HashMap::new();
         for (i, c) in table.iter().enumerate() {
-            revTable[c] = i as u8;
+            rev_table.insert(*c, i as u8);
         }
         Base58 {
             table: table,
-            revTable: revTable
+            rev_table: rev_table
         }
     }
 
-    fn encode(&self, bin: Vec<u8>) -> String {
+    fn encode(&self, mut bin: Vec<u8>) -> String {
         let mut s = Vec::new();
         let mut carry = 0u32;
         while let Some(u) = bin.pop() {
@@ -38,7 +40,7 @@ impl Base58 {
         let mut bin = Vec::new();
         let mut carry = 0u32;
         while let Some(c) = s.pop() {
-            let u = self.revTable[&c] as u32 + (carry*58);
+            let u = self.rev_table[&c] as u32 + (carry*58);
             if u > 255 { bin.push((u%256) as u8); }
             carry = u/58;
         }
