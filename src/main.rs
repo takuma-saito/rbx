@@ -38,19 +38,29 @@ impl Base58 {
     
     fn decode(&self, text: &str) -> Vec<u8> {
         let mut s = text.as_bytes().to_vec();
-        let mut bin = Vec::new();
-        let mut carry = 0u16;
-        while let Some(c) = s.pop() {
-            carry = carry * 58 + (self.rev_table[&c] as u16);
-            while carry >= 256 {
-                bin.push((carry%256) as u8);
+        let factor = (58f64.ln()/256f64.ln()).ceil() as usize;
+        let mut bin = vec![0u8; factor * s.len()];
+        let mut carry = 0u16; let mut i = 0usize;
+        s.reverse();
+        while i != s.len() {
+            carry = self.rev_table[&s[i]] as u16;
+            let mut j = 0usize;
+            while j != bin.len() && carry != 0 {
+                carry += 58 * (bin[j] as u16); // b256 = 58 * b256 + c
+                bin[j] = (carry % 256) as u8;
                 carry /= 256;
+                j += 1;
             }
+            i += 1;
         }
-        if carry > 0 { bin.push((carry%256) as u8); }
         bin.reverse();
-        println!("{}", bin.iter().map(|x| format!("{:02X}", x)).collect::<String>().to_lowercase());
+        println!("{:?}", &bin);
+        self.print_hex(&bin);
         bin
+    }
+    
+    fn print_hex(&self, bin: &Vec<u8>) {
+        println!("{}", bin.iter().map(|x| format!("{:02X}", x)).collect::<String>().to_lowercase());
     }
 }
 
@@ -86,9 +96,11 @@ impl Base58check {
 }
 
 fn main() {
-    let str = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
+    // let str = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
+    let str = "2NEpo7TZRRrLZSi2U";
     let base58check = Base58check::new();
     let base58 = Base58::new();
     let mut version = vec![0x04, 0x88, 0xb2, 0x1e];
-    println!("{:?}", base58.encode(base58.decode(str)));
+    let _ = base58.decode(str);
+    //println!("{:?}", base58.encode(base58.decode(str)));
 }
