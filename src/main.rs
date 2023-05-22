@@ -68,10 +68,10 @@ impl Base58 {
         bin.reverse();
         bin
     }
-    
-    fn print_hex(&self, bin: &Vec<u8>) {
-        println!("{}", bin.iter().map(|x| format!("{:02x}", x)).collect::<String>());
-    }
+}
+
+fn print_hex(bin: &Vec<u8>) {
+    println!("{}", bin.iter().map(|x| format!("{:02x}", x)).collect::<String>());
 }
 
 struct Base58check {
@@ -100,7 +100,6 @@ impl Base58check {
     fn decode(&self, text: &str) -> Vec<u8> {
         let data = self.base58.decode(text);
         let res = data[4 .. (data.len()-4)].to_vec(); // TODO: checksum のコードを入れる, version drop 対応
-        println!("{:?}", data.iter().map(|x| format!("{:02X}", x)).collect::<String>());
         res
     }
 }
