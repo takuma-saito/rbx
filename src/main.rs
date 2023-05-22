@@ -53,7 +53,7 @@ impl Base58 {
             }
             i += 1;
         }
-        bin.reverse();
+        //bin.reverse();
         println!("{:?}", &bin);
         self.print_hex(&bin);
         bin
