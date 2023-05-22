@@ -41,7 +41,7 @@ impl Base58 {
             b58.pop();
         }
         b58.reverse();
-        let s = b58.iter().map(|x| self.table[*x]).collect::<Vec<u8>>();
+        let s = b58.into_iter().map(|x| self.table[x]).collect::<Vec<u8>>();
         String::from_utf8(s).unwrap()
     }
     
