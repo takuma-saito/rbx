@@ -113,5 +113,5 @@ fn main() {
     let base58 = Base58::new();
     let mut version = vec![0x04, 0x88, 0xb2, 0x1e];
     let _ = base58.decode(str);
-    println!("{:?}", base58.encode(base58.decode(str)));
+    println!("{:?}", base58check.encode(version, base58check.decode(str)));
 }
