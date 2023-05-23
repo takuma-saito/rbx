@@ -90,16 +90,22 @@ impl Base58check {
         Sha256::digest(Sha256::digest(bin)).to_vec()
     }
 
-    fn encode(&self, mut version: Vec<u8>, mut bin: Vec<u8>) -> String {
-        version.append(&mut bin); // TODO: もう少しいいやり方を考える
-        let mut checksum = self.double_hash(&version)[0..4].to_vec();
-        version.append(&mut checksum); // TODO: Vec に変更せず slice で実装する
-        self.base58.encode(version)
+    fn checksum(&self, bin: &[u8]) -> Vec<u8> {
+        self.double_hash(&bin)[0..4].to_vec()
+    }
+
+    fn encode(&self, mut bin: Vec<u8>, version: &[u8]) -> String {
+        let mut b256 = version.to_vec();
+        let mut checksum = self.checksum(&bin);
+        b256.append(&mut bin);
+        b256.append(&mut checksum);
+        self.base58.encode(b256)
     }
 
     fn decode(&self, text: &str) -> Vec<u8> {
         let data = self.base58.decode(text);
         let res = data[4 .. (data.len()-4)].to_vec(); // TODO: checksum のコードを入れる, version drop 対応
+        
         res
     }
 }
@@ -112,5 +118,5 @@ fn main() {
     let base58 = Base58::new();
     let mut version = vec![0x04, 0x88, 0xb2, 0x1e];
     let _ = base58.decode(str);
-    println!("{:?}", base58check.encode(version, base58check.decode(str)));
+    println!("{:?}", base58check.encode(base58check.decode(str), &version));
 }
